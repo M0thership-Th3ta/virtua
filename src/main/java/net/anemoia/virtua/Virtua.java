@@ -1,6 +1,7 @@
 package net.anemoia.virtua;
 
 import com.mojang.logging.LogUtils;
+import net.anemoia.virtua.item.ModCreativeModeTabs;
 import net.anemoia.virtua.item.ModItems;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
@@ -28,6 +29,7 @@ public class Virtua
     public Virtua(FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
 
+        ModCreativeModeTabs.register(modEventBus);
         ModItems.register(modEventBus);
 
         // Register the commonSetup method for modloading
@@ -52,6 +54,7 @@ public class Virtua
         if(event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             // Add Distilled Time item to the Ingredients tab
             event.accept(ModItems.DISTILLED_TIME);
+            event.accept(ModItems.TIME_BOTTLE);
         }
     }
 

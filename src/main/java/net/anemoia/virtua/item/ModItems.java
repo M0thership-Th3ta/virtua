@@ -13,6 +13,8 @@ public class ModItems {
 
     public static final RegistryObject<Item> DISTILLED_TIME = ITEMS.register("distilled_time",
             () -> new Item(new Item.Properties()));
+    public static final RegistryObject<Item> TIME_BOTTLE = ITEMS.register("time_bottle",
+            () -> new Item(new Item.Properties()));
 
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);}

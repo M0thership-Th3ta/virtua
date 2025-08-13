@@ -1,6 +1,8 @@
 package net.anemoia.virtua;
 
 import com.mojang.logging.LogUtils;
+import net.anemoia.virtua.item.ModItems;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -26,6 +28,8 @@ public class Virtua
     public Virtua(FMLJavaModLoadingContext context) {
         IEventBus modEventBus = context.getModEventBus();
 
+        ModItems.register(modEventBus);
+
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
@@ -45,7 +49,10 @@ public class Virtua
 
     // Add the example block item to the building blocks tab
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
-
+        if(event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+            // Add Distilled Time item to the Ingredients tab
+            event.accept(ModItems.DISTILLED_TIME);
+        }
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call

@@ -1,6 +1,7 @@
 package net.anemoia.virtua.item;
 
 import net.anemoia.virtua.Virtua;
+import net.anemoia.virtua.block.ModBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -18,6 +19,7 @@ public class ModCreativeModeTabs {
                     .icon(() -> new ItemStack(ModItems.DISTILLED_TIME.get()))
                     .title(Component.translatable("creativetab.sands_of_time_tab"))
                     .displayItems((pParameters, pOutput) -> {
+                        pOutput.accept(ModBlocks.SAND_OF_TIME.get());
                         pOutput.accept(ModItems.TIME_BOTTLE.get());
                         pOutput.accept(ModItems.DISTILLED_TIME.get());
                     })

@@ -1,6 +1,7 @@
 package net.anemoia.virtua;
 
 import com.mojang.logging.LogUtils;
+import net.anemoia.virtua.block.ModBlocks;
 import net.anemoia.virtua.effect.ModEffects;
 import net.anemoia.virtua.item.ModCreativeModeTabs;
 import net.anemoia.virtua.item.ModItems;
@@ -32,6 +33,7 @@ public class Virtua
 
         ModCreativeModeTabs.register(modEventBus);
         ModItems.register(modEventBus);
+        ModBlocks.register(modEventBus);
         ModEffects.register(modEventBus);
 
         // Register the commonSetup method for modloading

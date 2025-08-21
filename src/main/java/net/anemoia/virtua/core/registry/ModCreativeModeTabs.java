@@ -1,7 +1,6 @@
-package net.anemoia.virtua.item;
+package net.anemoia.virtua.core.registry;
 
-import net.anemoia.virtua.Virtua;
-import net.anemoia.virtua.block.ModBlocks;
+import net.anemoia.virtua.core.Virtua;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;

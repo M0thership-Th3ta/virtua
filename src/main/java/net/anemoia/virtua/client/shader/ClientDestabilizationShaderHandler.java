@@ -1,15 +1,13 @@
-package net.anemoia.virtua.client;
+package net.anemoia.virtua.client.shader;
 
-import net.anemoia.virtua.Virtua;
-import net.anemoia.virtua.effect.ModEffects;
+import net.anemoia.virtua.core.Virtua;
+import net.anemoia.virtua.core.registry.ModEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-
-import java.util.Random;
 
 @Mod.EventBusSubscriber(modid = Virtua.MOD_ID, value = Dist.CLIENT)
 public class ClientDestabilizationShaderHandler {

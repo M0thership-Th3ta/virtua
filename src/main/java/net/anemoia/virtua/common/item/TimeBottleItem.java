@@ -1,6 +1,6 @@
-package net.anemoia.virtua.item.custom;
+package net.anemoia.virtua.common.item;
 
-import net.anemoia.virtua.effect.ModEffects;
+import net.anemoia.virtua.core.registry.ModEffects;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;

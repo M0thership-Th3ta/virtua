@@ -1,6 +1,7 @@
-package net.anemoia.virtua.effect;
+package net.anemoia.virtua.core.registry;
 
-import net.anemoia.virtua.Virtua;
+import net.anemoia.virtua.core.Virtua;
+import net.anemoia.virtua.common.effect.DestabilizationEffect;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;

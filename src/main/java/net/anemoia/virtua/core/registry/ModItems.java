@@ -1,7 +1,7 @@
-package net.anemoia.virtua.item;
+package net.anemoia.virtua.core.registry;
 
-import net.anemoia.virtua.Virtua;
-import net.anemoia.virtua.item.custom.TimeBottleItem;
+import net.anemoia.virtua.core.Virtua;
+import net.anemoia.virtua.common.item.TimeBottleItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.eventbus.api.IEventBus;

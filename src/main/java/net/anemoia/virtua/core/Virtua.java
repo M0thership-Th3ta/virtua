@@ -1,10 +1,10 @@
-package net.anemoia.virtua;
+package net.anemoia.virtua.core;
 
 import com.mojang.logging.LogUtils;
-import net.anemoia.virtua.block.ModBlocks;
-import net.anemoia.virtua.effect.ModEffects;
-import net.anemoia.virtua.item.ModCreativeModeTabs;
-import net.anemoia.virtua.item.ModItems;
+import net.anemoia.virtua.core.registry.ModBlocks;
+import net.anemoia.virtua.core.registry.ModEffects;
+import net.anemoia.virtua.core.registry.ModCreativeModeTabs;
+import net.anemoia.virtua.core.registry.ModItems;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;

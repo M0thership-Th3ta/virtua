@@ -1,7 +1,6 @@
-package net.anemoia.virtua.block;
+package net.anemoia.virtua.core.registry;
 
-import net.anemoia.virtua.Virtua;
-import net.anemoia.virtua.item.ModItems;
+import net.anemoia.virtua.core.Virtua;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;

@@ -1,4 +1,4 @@
-package net.anemoia.virtua.effect;
+package net.anemoia.virtua.common.effect;
 
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;

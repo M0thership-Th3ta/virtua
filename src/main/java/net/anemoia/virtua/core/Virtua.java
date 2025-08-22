@@ -1,17 +1,21 @@
 package net.anemoia.virtua.core;
 
 import com.mojang.logging.LogUtils;
-import net.anemoia.virtua.core.registry.ModBlocks;
-import net.anemoia.virtua.core.registry.ModEffects;
-import net.anemoia.virtua.core.registry.ModCreativeModeTabs;
-import net.anemoia.virtua.core.registry.ModItems;
+import net.anemoia.virtua.core.data.server.ModDatapackBuiltinEntriesProvider;
+import net.anemoia.virtua.core.registry.*;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -19,38 +23,43 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
-// The value here should match an entry in the META-INF/mods.toml file
-@Mod(Virtua.MOD_ID)
-public class Virtua
-{
-    // Define mod id in a common place for everything to reference
+import java.util.concurrent.CompletableFuture;
+
+@Mod(value = Virtua.MOD_ID)
+public class Virtua {
     public static final String MOD_ID = "virtua";
-    // Directly reference a slf4j logger
     private static final Logger LOGGER = LogUtils.getLogger();
+    public static Virtua instance;
 
-    public Virtua(FMLJavaModLoadingContext context) {
-        IEventBus modEventBus = context.getModEventBus();
-
-        ModCreativeModeTabs.register(modEventBus);
-        ModItems.register(modEventBus);
-        ModBlocks.register(modEventBus);
-        ModEffects.register(modEventBus);
-
-        // Register the commonSetup method for modloading
-        modEventBus.addListener(this::commonSetup);
-
-        // Register ourselves for server and other game events we are interested in
+    public Virtua() {
+        IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
+        ModLoadingContext context = ModLoadingContext.get();
         MinecraftForge.EVENT_BUS.register(this);
 
-        // Register the item to a creative tab
-        modEventBus.addListener(this::addCreative);
+        instance = this;
 
-        // Register our mod's ForgeConfigSpec so that Forge can create and load the config file for us
+        ModCreativeModeTabs.CREATIVE_MODE_TABS.register(bus);
+        ModItems.ITEMS.register(bus);
+        ModBlocks.BLOCKS.register(bus);
+        ModEffects.MOB_EFFECTS.register(bus);
+
+        bus.addListener(EventPriority.LOWEST, this::commonSetup);
+        bus.addListener(this::dataSetup);
+        bus.addListener(this::addCreative);
+
         context.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
 
+    }
+
+    private void dataSetup(GatherDataEvent event) {
+        boolean includeServer = event.includeServer();
+        DataGenerator generator = event.getGenerator();
+        PackOutput packOutput = generator.getPackOutput();
+        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
+        generator.addProvider(includeServer, new ModDatapackBuiltinEntriesProvider(packOutput, lookupProvider));
     }
 
     // Add the example block item to the building blocks tab

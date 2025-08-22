@@ -4,32 +4,61 @@ import com.mojang.datafixers.util.Pair;
 import com.teamabnormals.blueprint.common.world.modification.ModdedBiomeSlice;
 import com.teamabnormals.blueprint.core.registry.BlueprintBiomes;
 import com.teamabnormals.blueprint.core.registry.BlueprintDataPackRegistries;
+import com.teamabnormals.blueprint.core.util.BiomeUtil;
 import com.teamabnormals.blueprint.core.util.BiomeUtil.MultiNoiseModdedBiomeProvider;
 import net.anemoia.virtua.core.Virtua;
-import net.anemoia.virtua.core.registry.builtin.ModBiomes;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.biome.FixedBiomeSource;
 import net.minecraft.world.level.dimension.LevelStem;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static net.anemoia.virtua.core.registry.builtin.ModBiomes.*;
 
-public class ModOverworldBiomeSlices {
+public class ModBiomeSlices {
     public static final ResourceKey<ModdedBiomeSlice> SANDS_OF_TIME_SLICE = createKey("sands_of_time_slice");
-    public static final ResourceKey<Biome> SANDS_OF_TIME_AREA = ModBiomes.createKey("sands_of_time_area");
+    public static final ResourceKey<ModdedBiomeSlice> REBORN_FOREST_SLICE = createKey("reborn_forest_slice");
+
+    public static final ResourceKey<Biome> REBORN_FOREST_AREA = ModBiomes.createKey("reborn_forest_area");
+    public static final ResourceKey<Biome> SPARSE_REBORN_FOREST_AREA = ModBiomes.createKey("sparse_reborn_forest_area");
+    public static final ResourceKey<Biome> VOLCANIC_FLATS_AREA = ModBiomes.createKey("volcanic_flats_area");
 
     public static void bootstrap(BootstapContext<ModdedBiomeSlice> context) {
         List<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> entries = new ArrayList<>();
         new VirtuaBiomeBuilder().addBiomes(entries::add);
 
-        context.register(SANDS_OF_TIME_SLICE, new ModdedBiomeSlice(8, MultiNoiseModdedBiomeProvider.builder().biomes(entries::forEach)
-                .area(SANDS_OF_TIME_AREA, SANDS_OF_TIME).build(), LevelStem.OVERWORLD));
+        context.register(REBORN_FOREST_SLICE, new ModdedBiomeSlice(8, MultiNoiseModdedBiomeProvider.builder().biomes(entries::forEach)
+                .area(REBORN_FOREST_AREA, REBORN_FOREST)
+                .area(SPARSE_REBORN_FOREST_AREA, SPARSE_REBORN_FOREST)
+                .area(VOLCANIC_FLATS_AREA, VOLCANIC_FLATS)
+                .build(), LevelStem.OVERWORLD));
+
+        HolderGetter<Biome> biomes = context.lookup(Registries.BIOME);
+        context.register(SANDS_OF_TIME_SLICE, new ModdedBiomeSlice(15,
+                new BiomeUtil.OverlayModdedBiomeProvider(List.of(
+                        Pair.of(
+                                HolderSet.direct(
+                                        Stream.of(Biomes.DESERT)
+                                                .map(biomes::getOrThrow)
+                                                .collect(Collectors.toList())
+                                ),
+                                new FixedBiomeSource(Holder.direct(biomes.getOrThrow(ModBiomes.SANDS_OF_TIME)).get())
+                        )
+                )), LevelStem.OVERWORLD)
+        );
     }
 
     public static ResourceKey<ModdedBiomeSlice> createKey(String name) {
@@ -52,8 +81,8 @@ public class ModOverworldBiomeSlices {
                 {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
                 {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
                 {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
-                {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
-                {VANILLA, VANILLA, VANILLA, SANDS_OF_TIME_AREA, VANILLA}
+                {VANILLA, VANILLA, VANILLA, REBORN_FOREST_AREA, REBORN_FOREST_AREA},
+                {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA}
         };
         private final ResourceKey<Biome>[][] MIDDLE_BIOMES_VARIANT = new ResourceKey[][]{
                 {VANILLA, null, VANILLA, null, null},
@@ -66,21 +95,21 @@ public class ModOverworldBiomeSlices {
                 {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
                 {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
                 {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
-                {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
+                {VANILLA, VANILLA, VANILLA, REBORN_FOREST_AREA, REBORN_FOREST_AREA},
                 {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA}
         };
         private final ResourceKey<Biome>[][] PLATEAU_BIOMES_VARIANT = new ResourceKey[][]{
                 {VANILLA, null, null, null, null},
                 {null, null, VANILLA, null, VANILLA},
                 {null, null, VANILLA, VANILLA, null},
-                {null, null, null, null, null},
+                {null, null, null, VOLCANIC_FLATS_AREA, SPARSE_REBORN_FOREST_AREA},
                 {null, null, null, null, null}
         };
         private final ResourceKey<Biome>[][] SHATTERED_BIOMES = new ResourceKey[][]{
                 {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
                 {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
                 {VANILLA, VANILLA, VANILLA, VANILLA, VANILLA},
-                {null, null, null, null, null},
+                {null, null, null, REBORN_FOREST_AREA, REBORN_FOREST_AREA},
                 {null, null, null, null, null}
         };
 
@@ -119,17 +148,13 @@ public class ModOverworldBiomeSlices {
                 for (int j = 0; j < this.humidities.length; ++j) {
                     Climate.Parameter climate$parameter1 = this.humidities[j];
                     ResourceKey<Biome> resourcekey = this.pickMiddleBiome(i, j, weirdness);
-                    ResourceKey<Biome> resourcekey1 = this.pickMiddleBiomeOrSandsOfTimeIfHot(i, j, weirdness);
-                    ResourceKey<Biome> resourcekey2 = this.pickMiddleBiomeOrSandsOfTimeIfHotOrSlopeIfCold(i, j, weirdness);
                     ResourceKey<Biome> resourcekey3 = this.pickPlateauBiome(i, j, weirdness);
                     ResourceKey<Biome> resourcekey4 = this.pickShatteredBiome(i, j, weirdness);
                     ResourceKey<Biome> resourcekey6 = this.pickPeakBiome(i, j, weirdness);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[0], weirdness, 0.0F, resourcekey6);
-                    this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), this.erosions[1], weirdness, 0.0F, resourcekey2);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[1], weirdness, 0.0F, resourcekey6);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[3]), weirdness, 0.0F, resourcekey);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[2], weirdness, 0.0F, resourcekey3);
-                    this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.midInlandContinentalness, this.erosions[3], weirdness, 0.0F, resourcekey1);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.farInlandContinentalness, this.erosions[3], weirdness, 0.0F, resourcekey3);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[4], weirdness, 0.0F, resourcekey);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[5], weirdness, 0.0F, resourcekey4);
@@ -145,8 +170,6 @@ public class ModOverworldBiomeSlices {
                 for (int j = 0; j < this.humidities.length; ++j) {
                     Climate.Parameter climate$parameter1 = this.humidities[j];
                     ResourceKey<Biome> resourcekey = this.pickMiddleBiome(i, j, weirdness);
-                    ResourceKey<Biome> resourcekey1 = this.pickMiddleBiomeOrSandsOfTimeIfHot(i, j, weirdness);
-                    ResourceKey<Biome> resourcekey2 = this.pickMiddleBiomeOrSandsOfTimeIfHotOrSlopeIfCold(i, j, weirdness);
                     ResourceKey<Biome> resourcekey3 = this.pickPlateauBiome(i, j, weirdness);
                     ResourceKey<Biome> resourcekey4 = this.pickShatteredBiome(i, j, weirdness);
                     ResourceKey<Biome> resourcekey6 = this.pickSlopeBiome(i, j, weirdness);
@@ -154,11 +177,9 @@ public class ModOverworldBiomeSlices {
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.coastContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, resourcekey);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.nearInlandContinentalness, this.erosions[0], weirdness, 0.0F, resourcekey6);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[0], weirdness, 0.0F, resourcekey7);
-                    this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.nearInlandContinentalness, this.erosions[1], weirdness, 0.0F, resourcekey2);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[1], weirdness, 0.0F, resourcekey6);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[3]), weirdness, 0.0F, resourcekey);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[2], weirdness, 0.0F, resourcekey3);
-                    this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.midInlandContinentalness, this.erosions[3], weirdness, 0.0F, resourcekey1);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.farInlandContinentalness, this.erosions[3], weirdness, 0.0F, resourcekey3);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.coastContinentalness, this.farInlandContinentalness), this.erosions[4], weirdness, 0.0F, resourcekey);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[5], weirdness, 0.0F, resourcekey4);
@@ -179,21 +200,16 @@ public class ModOverworldBiomeSlices {
                 for (int j = 0; j < this.humidities.length; ++j) {
                     Climate.Parameter climate$parameter1 = this.humidities[j];
                     ResourceKey<Biome> resourcekey = this.pickMiddleBiome(i, j, weirdness);
-                    ResourceKey<Biome> resourcekey1 = this.pickMiddleBiomeOrSandsOfTimeIfHot(i, j, weirdness);
-                    ResourceKey<Biome> resourcekey2 = this.pickMiddleBiomeOrSandsOfTimeIfHotOrSlopeIfCold(i, j, weirdness);
                     ResourceKey<Biome> resourcekey3 = this.pickShatteredBiome(i, j, weirdness);
                     ResourceKey<Biome> resourcekey4 = this.pickPlateauBiome(i, j, weirdness);
                     ResourceKey<Biome> resourcekey5 = this.pickBeachBiome(i, j, weirdness);
                     ResourceKey<Biome> resourcekey7 = this.pickShatteredCoastBiome(i, j, weirdness);
                     ResourceKey<Biome> resourcekey8 = this.pickSlopeBiome(i, j, weirdness);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[0], weirdness, 0.0F, resourcekey8);
-                    this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.nearInlandContinentalness, this.midInlandContinentalness), this.erosions[1], weirdness, 0.0F, resourcekey2);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.farInlandContinentalness, this.erosions[1], weirdness, 0.0F, i == 0 ? resourcekey8 : resourcekey4);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.nearInlandContinentalness, this.erosions[2], weirdness, 0.0F, resourcekey);
-                    this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.midInlandContinentalness, this.erosions[2], weirdness, 0.0F, resourcekey1);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.farInlandContinentalness, this.erosions[2], weirdness, 0.0F, resourcekey4);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.coastContinentalness, this.nearInlandContinentalness), this.erosions[3], weirdness, 0.0F, resourcekey);
-                    this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), this.erosions[3], weirdness, 0.0F, resourcekey1);
                     if (weirdness.max() < 0L) {
                         this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.coastContinentalness, this.erosions[4], weirdness, 0.0F, resourcekey5);
                         this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[4], weirdness, 0.0F, resourcekey);
@@ -228,14 +244,9 @@ public class ModOverworldBiomeSlices {
                 for (int j = 0; j < this.humidities.length; ++j) {
                     Climate.Parameter climate$parameter1 = this.humidities[j];
                     ResourceKey<Biome> resourcekey = this.pickMiddleBiome(i, j, weirdness);
-                    ResourceKey<Biome> resourcekey1 = this.pickMiddleBiomeOrSandsOfTimeIfHot(i, j, weirdness);
-                    ResourceKey<Biome> resourcekey2 = this.pickMiddleBiomeOrSandsOfTimeIfHotOrSlopeIfCold(i, j, weirdness);
                     ResourceKey<Biome> resourcekey3 = this.pickBeachBiome(i, j, weirdness);
                     ResourceKey<Biome> resourcekey5 = this.pickShatteredCoastBiome(i, j, weirdness);
-                    this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, resourcekey1);
-                    this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, resourcekey2);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[2], this.erosions[3]), weirdness, 0.0F, resourcekey);
-                    this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[2], this.erosions[3]), weirdness, 0.0F, resourcekey1);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.coastContinentalness, Climate.Parameter.span(this.erosions[3], this.erosions[4]), weirdness, 0.0F, resourcekey3);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, Climate.Parameter.span(this.nearInlandContinentalness, this.farInlandContinentalness), this.erosions[4], weirdness, 0.0F, resourcekey);
                     this.addSurfaceBiome(consumer, climate$parameter, climate$parameter1, this.coastContinentalness, this.erosions[5], weirdness, 0.0F, resourcekey5);
@@ -256,8 +267,6 @@ public class ModOverworldBiomeSlices {
                 Climate.Parameter temperature = this.temperatures[temperatureIndex];
                 for (int humidityIndex = 0; humidityIndex < this.humidities.length; ++humidityIndex) {
                     Climate.Parameter humidity = this.humidities[humidityIndex];
-                    ResourceKey<Biome> resourcekey = this.pickMiddleBiomeOrSandsOfTimeIfHot(temperatureIndex, humidityIndex, weirdness);
-                    this.addSurfaceBiome(consumer, temperature, humidity, Climate.Parameter.span(this.midInlandContinentalness, this.farInlandContinentalness), Climate.Parameter.span(this.erosions[0], this.erosions[1]), weirdness, 0.0F, resourcekey);
                 }
             }
         }
@@ -284,14 +293,6 @@ public class ModOverworldBiomeSlices {
             }
         }
 
-        private ResourceKey<Biome> pickMiddleBiomeOrSandsOfTimeIfHot(int temperatureIndex, int humidityIndex, Climate.Parameter weirdness) {
-            return temperatureIndex == 4 ? this.pickSandsOfTimeBiome(humidityIndex, weirdness) : this.pickMiddleBiome(temperatureIndex, humidityIndex, weirdness);
-        }
-
-        private ResourceKey<Biome> pickMiddleBiomeOrSandsOfTimeIfHotOrSlopeIfCold(int temperatureIndex, int humidityIndex, Climate.Parameter weirdness) {
-            return temperatureIndex == 0 ? this.pickSlopeBiome(temperatureIndex, humidityIndex, weirdness) : this.pickMiddleBiomeOrSandsOfTimeIfHot(temperatureIndex, humidityIndex, weirdness);
-        }
-
         private ResourceKey<Biome> pickShatteredCoastBiome(int temperatureIndex, int humidityIndex, Climate.Parameter weirdness) {
             ResourceKey<Biome> resourcekey = weirdness.max() >= 0L ? this.pickMiddleBiome(temperatureIndex, humidityIndex, weirdness) : this.pickBeachBiome(temperatureIndex, humidityIndex, weirdness);
             return resourcekey;
@@ -300,16 +301,6 @@ public class ModOverworldBiomeSlices {
         private ResourceKey<Biome> pickBeachBiome(int temperatureIndex, int humidityIndex, Climate.Parameter weirdness) {
             if (temperatureIndex == 0) {
                 return VANILLA;
-            } else {
-                return VANILLA;
-            }
-        }
-
-        private ResourceKey<Biome> pickSandsOfTimeBiome(int humidityIndex, Climate.Parameter weirdness) {
-            if (humidityIndex < 1) {
-                return VANILLA;
-            } else if (humidityIndex < 3) {
-                return SANDS_OF_TIME_AREA;
             } else {
                 return VANILLA;
             }

@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 public class ModDatapackBuiltinEntriesProvider extends DatapackBuiltinEntriesProvider {
     public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
             .add(Registries.BIOME, ModBiomes::bootstrap)
-            .add(BlueprintDataPackRegistries.MODDED_BIOME_SLICES, ModOverworldBiomeSlices::bootstrap);
+            .add(BlueprintDataPackRegistries.MODDED_BIOME_SLICES, ModBiomeSlices::bootstrap);
 
     public ModDatapackBuiltinEntriesProvider(PackOutput output, CompletableFuture<Provider> provider) {
         super(output, provider, BUILDER, Set.of(Virtua.MOD_ID, "minecraft"));

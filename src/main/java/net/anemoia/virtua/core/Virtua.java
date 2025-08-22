@@ -2,6 +2,7 @@ package net.anemoia.virtua.core;
 
 import com.mojang.logging.LogUtils;
 import net.anemoia.virtua.core.data.server.ModDatapackBuiltinEntriesProvider;
+import net.anemoia.virtua.core.data.server.modifiers.ModChunkGeneratorModifierProvider;
 import net.anemoia.virtua.core.registry.*;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
@@ -9,6 +10,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.data.ExistingFileHelper;
 import net.minecraftforge.data.event.GatherDataEvent;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
@@ -55,11 +57,18 @@ public class Virtua {
     }
 
     private void dataSetup(GatherDataEvent event) {
-        boolean includeServer = event.includeServer();
         DataGenerator generator = event.getGenerator();
-        PackOutput packOutput = generator.getPackOutput();
-        CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
-        generator.addProvider(includeServer, new ModDatapackBuiltinEntriesProvider(packOutput, lookupProvider));
+        PackOutput output = generator.getPackOutput();
+        CompletableFuture<HolderLookup.Provider> provider = event.getLookupProvider();
+        ExistingFileHelper helper = event.getExistingFileHelper();
+
+        boolean server = event.includeServer();
+
+        ModDatapackBuiltinEntriesProvider datapackEntries = new ModDatapackBuiltinEntriesProvider(output, provider);
+        generator.addProvider(server, datapackEntries);
+        provider = datapackEntries.getRegistryProvider();
+
+        generator.addProvider(server, new ModChunkGeneratorModifierProvider(output, provider));
     }
 
     // Add the example block item to the building blocks tab
